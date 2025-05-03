@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Rotation Planner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+        .input-group .range {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #1a73e8;
+            outline: none;
+            box-shadow: 0 0 5px rgba(26, 115, 232, 0.3);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1557b0;
+        }
+        .error {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #ffe6e6;
+            color: #d32f2f;
+            text-align: center;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #e0f7fa;
+            color: #333;
+            text-align: left;
+        }
+        .result h3 {
+            margin-top: 0;
+            color: #1a73e8;
+        }
+        .benefits {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: left;
+        }
+        .benefits h3 {
+            margin-top: 0;
+            color: #1a73e8;
+        }
+        .suggestions {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+        .suggestions h3 {
+            margin-top: 0;
+            color: #1a73e8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crop Rotation Planner</h1>
+        <form method="POST" action="/recommend">
+            <div class="input-group">
+                <label for="previous_crop">Previous Crop</label>
+                <select id="previous_crop" name="previous_crop" required>
+                    <option value="" disabled {% if not previous_crop %}selected{% endif %}>Select a crop</option>
+                    {% for crop in crops %}
+                        <option value="{{ crop }}" {% if previous_crop == crop %}selected{% endif %}>{{ crop }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="nitrogen">Nitrogen (N) Level (kg/ha)</label>
+                <div class="range">Range: 0 to 140 kg/ha</div>
+                <input type="number" id="nitrogen" name="nitrogen" step="0.1" value="{{ request.form.nitrogen if request.form else '' }}" required>
+            </div>
+            <div class="input-group">
+                <label for="phosphorus">Phosphorus (P) Level (kg/ha)</label>
+                <div class="range">Range: 5 to 145 kg/ha</div>
+                <input type="number" id="phosphorus" name="phosphorus" step="0.1" value="{{ request.form.phosphorus if request.form else '' }}" required>
+            </div>
+            <div class="input-group">
+                <label for="potassium">Potassium (K) Level (kg/ha)</label>
+                <div class="range">Range: 5 to 205 kg/ha</div>
+                <input type="number" id="potassium" name="potassium" step="0.1" value="{{ request.form.potassium if request.form else '' }}" required>
+            </div>
+            <div class="input-group">
+                <label for="temperature">Temperature (°C)</label>
+                <div class="range">Range: 8 to 44 °C</div>
+                <input type="number" id="temperature" name="temperature" step="0.1" value="{{ request.form.temperature if request.form else '' }}" required>
+            </div>
+            <div class="input-group">
+                <label for="humidity">Humidity (%)</label>
+                <div class="range">Range: 14 to 100 %</div>
+                <input type="number" id="humidity" name="humidity" step="0.1" value="{{ request.form.humidity if request.form else '' }}" required>
+            </div>
+            <div class="input-group">
+                <label for="ph">Soil pH</label>
+                <div class="range">Range: 3.5 to 9.9</div>
+                <input type="number" id="ph" name="ph" step="0.1" value="{{ request.form.ph if request.form else '' }}" required>
+            </div>
+            <div class="input-group">
+                <label for="rainfall">Rainfall (mm)</label>
+                <div class="range">Range: 20 to 300 mm</div>
+                <input type="number" id="rainfall" name="rainfall" step="0.1" value="{{ request.form.rainfall if request.form else '' }}" required>
+            </div>
+            <button type="submit">Get Recommendation</button>
+        </form>
+        {% if error %}
+            <div class="error">
+                <p>{{ error }}</p>
+            </div>
+        {% endif %}
+        {% if previous_crop %}
+            <div class="result">
+                <h3>Previous Crop</h3>
+                <p>{{ previous_crop }}</p>
+            </div>
+        {% endif %}
+        {% if recommended_crop %}
+            <div class="result">
+                <h3>Recommended Crop for Rotation</h3>
+                <p>{{ recommended_crop }} (Profitability Score: {{ profitability_score }})</p>
+                <p><strong>Why this crop for alternation?</strong> {{ alternation_explanation }}</p>
+            </div>
+            <div class="benefits">
+                <h3>Benefits to the Farmer</h3>
+                <p>{{ farmer_benefits }}</p>
+                <h3>Benefits to the Soil</h3>
+                <p>{{ soil_benefits }}</p>
+            </div>
+        {% endif %}
+        {% if detailed_suggestions %}
+            <div class="suggestions">
+                <h3>Detailed Suggestions</h3>
+                <p>{{ detailed_suggestions }}</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
